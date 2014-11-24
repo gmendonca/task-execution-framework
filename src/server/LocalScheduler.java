@@ -8,7 +8,7 @@ import java.net.Socket;
 
 
 
-public class LocalScheduler {
+public class LocalScheduler implements Runnable{
 	 private int port;
 	 private ServerSocket socketServer;
 	 
@@ -24,7 +24,16 @@ public class LocalScheduler {
 		
 		BufferedReader task = new BufferedReader(new InputStreamReader(client.getInputStream()));
 		
-		System.out.println(task);
+		System.out.println(task.readLine());
 	 }
+
+	public void run() {
+		try {
+			startServer();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
 	 
 }
