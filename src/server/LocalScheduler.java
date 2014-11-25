@@ -6,24 +6,24 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.LinkedList;
-import java.util.Queue;
 
 
 
 public class LocalScheduler implements Runnable{
 	 private int port;
 	 private ServerSocket socketServer;
-	 private Queue<SleepTask> scheduler;
+	 private TaskQueue queue;
 	 
 	 public LocalScheduler(int port){
 		 this.port = port;
-		 scheduler = new LinkedList<SleepTask>();
 	 }
 	 
 	 private void startServer() throws IOException {
 		 
 		socketServer = new ServerSocket(port);
+		queue = new TaskQueue();
+		Thread localWorker = new Thread(new LocalWorker());
+		localWorker.start();
 		
 		while(true){
 			Socket client = socketServer.accept();
@@ -37,9 +37,10 @@ public class LocalScheduler implements Runnable{
 		}
 	 }
 	 
+	@SuppressWarnings("static-access")
 	private void setNewTask(String task) {
 		SleepTask t = new SleepTask(task.split("\\s+")[0], Integer.parseInt(task.split("\\s+")[1].trim()));
-		scheduler.add(t);
+		queue.setTask(t);
 	}
 
 	@SuppressWarnings("unused")
