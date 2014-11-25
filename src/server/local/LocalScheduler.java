@@ -1,4 +1,4 @@
-package server;
+package server.local;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -7,23 +7,32 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-
-
 public class LocalScheduler implements Runnable{
 	 private int port;
 	 private ServerSocket socketServer;
 	 private TaskQueue queue;
+	 private int numThreads;
 	 
-	 public LocalScheduler(int port){
+	 public LocalScheduler(int port, int numThreads){
 		 this.port = port;
+		 this.numThreads = numThreads;
 	 }
 	 
 	 private void startServer() throws IOException {
 		 
 		socketServer = new ServerSocket(port);
 		queue = new TaskQueue();
-		Thread localWorker = new Thread(new LocalWorker());
-		localWorker.start();
+		//Thread localWorker = new Thread(new LocalWorker());
+		//localWorker.start();
+		
+//		setNewTask("Mamao 100");
+//		setNewTask("Banana 100");
+//		setNewTask("Maca 100");
+//		setNewTask("Abacate 100");
+		setNewTask("Melao 100");
+		
+		Thread worker = new Thread (new LocalWorker(numThreads));
+		worker.start();
 		
 		while(true){
 			Socket client = socketServer.accept();
