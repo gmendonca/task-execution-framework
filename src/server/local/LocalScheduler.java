@@ -7,6 +7,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class LocalScheduler implements Runnable{
 	 private int port;
@@ -35,6 +40,36 @@ public class LocalScheduler implements Runnable{
 		
 		client = socketServer.accept();
 		
+//		Thread readFromClient = new Thread(new Runnable(){
+//			public void run() {
+//				while(true){
+//					//client = socketServer.accept();
+//					String id;
+//					
+//					DataInputStream isr = null;
+//					try {
+//						isr = new DataInputStream(client.getInputStream());
+//					} catch (IOException e1) {
+//						// TODO Auto-generated catch block
+//						e1.printStackTrace();
+//					}
+//					byte[] messageByte = new byte[1024];
+//					try {
+//						while(isr.read(messageByte) != -1){
+//							id = new String(messageByte);
+//							//System.out.println(id);
+//							setNewTask(id);
+//							messageByte = new byte[1024];
+//						}
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//		});
+//		
+//		readFromClient.start();
+		
 		Thread tasksDone = new Thread(new Runnable(){
 			public void run() {
 				try {
@@ -56,25 +91,36 @@ public class LocalScheduler implements Runnable{
 		
 		getTasksDone.start();
 		
+		
+		String[] full;
+		Queue<String> lane = new LinkedList<String>();
+		
 		while(true){
 			//client = socketServer.accept();
-			String id;
 			
 			DataInputStream isr = new DataInputStream(client.getInputStream());
-			byte[] messageByte = new byte[1024];
+
+			byte[] messageByte = new byte[1000*1024];
 			while(isr.read(messageByte) != -1){
-				id = new String(messageByte);
-				//System.out.println(id);
-				setNewTask(id);
-				messageByte = new byte[1024];
+				System.out.println("message = " + new String(messageByte));
+				full = new String(messageByte).split(";");
+				lane.addAll(Arrays.asList(full));
+				System.out.println(lane.size());
+				messageByte = new byte[1000*1024];
+				while(!lane.isEmpty()){
+					String q = lane.poll();
+					if(q.compareTo(" ") > 0) setNewTask(q); //System.out.println(q);
+				}
 			}
 		}
 	 }
 	 
 	@SuppressWarnings("static-access")
 	private void setNewTask(String task) {
-		SleepTask t = new SleepTask(task.split("\\s+")[0], Integer.parseInt(task.split("\\s+")[1].trim()));
-		queue.setTask(t);
+		if(task.length() > 10) {
+			SleepTask t = new SleepTask(task.split("\\s+")[0], Integer.parseInt(task.split("\\s+")[1].trim()));
+			queue.setTask(t);
+		}
 	}
 
 	@SuppressWarnings("unused")

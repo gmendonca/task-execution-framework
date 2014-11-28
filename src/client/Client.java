@@ -9,7 +9,10 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
 
 public class Client implements Runnable{
@@ -49,18 +52,18 @@ public class Client implements Runnable{
     private void sendOneTask(List<String> tasks) throws IOException {
     	DataOutputStream dos = new DataOutputStream(socketClient.getOutputStream());
     	String task, id;
-    	int i = 0;
+    	//int i = 0;
 		for(String time : tasks){
-			//id = UUID.randomUUID().toString();
-			id = "Thread" + i;
-			i++;
+			id = UUID.randomUUID().toString();
+			//id = "Thread" + i;
+			//i++;
 			//System.out.println(id);
-			task =  id + " " + time;
+			task =  id + " " + time + ";";
 			sendTasks.add(id);
 			//if(sendTasks.add(id)) System.out.println(id);
 			//System.out.println(sendTasks.get(i));
 			dos.write(task.getBytes());
-			try { Thread.sleep(10); } catch (InterruptedException e) { }
+			try { Thread.sleep(100); } catch (InterruptedException e) { }
 		}
     }
     
@@ -89,17 +92,26 @@ public class Client implements Runnable{
     
     private void waitForResults() throws IOException{
     	String id;
+    	String [] full;
+    	Queue<String> lane = new LinkedList<String>();
     	for(;;){
     		DataInputStream dis = new DataInputStream(socketClient.getInputStream());
-    		byte[] messageByte = new byte[1024];
+    		byte[] messageByte = new byte[1000*1024];
 			while(dis.read(messageByte) != -1){
-				id = new String(messageByte);
-				System.out.println(id);
-				Boolean b = sendTasks.remove(id.trim());
-				if(b) System.out.println(sendTasks.size());
-				if(sendTasks.isEmpty()) System.out.println("All tasks done");
-				messageByte = new byte[1024];
-				try { Thread.sleep(100); } catch (InterruptedException e) { }
+				full = new String(messageByte).split(";");
+				//System.out.println(id);
+				//Boolean b = sendTasks.remove(id.trim());
+				//if(b) System.out.println(sendTasks.size());
+				//if(sendTasks.isEmpty()) System.out.println("All tasks done");
+				lane.addAll(Arrays.asList(full));
+				messageByte = new byte[1000*1024];
+				//try { Thread.sleep(100); } catch (InterruptedException e) { }
+				while(!lane.isEmpty()){
+					String q = lane.poll();
+					Boolean b = sendTasks.remove(q);
+					if(b) System.out.println(sendTasks.size());
+					//if(sendTasks.isEmpty()) System.out.println("All tasks done");
+				}
 			}
     	}
     }
@@ -110,6 +122,7 @@ public class Client implements Runnable{
 			connectToServer();
 			//sendTask(workLoad());
 			sendOneTask(workLoad());
+			
 			waitForResults();
 		} catch (Exception e) {
 			System.out.println("Couldn't connect");
