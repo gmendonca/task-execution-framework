@@ -1,6 +1,7 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,11 +17,13 @@ public class Client implements Runnable{
 	private int port;
     private Socket socketClient;
     private String filename;
+    private List<String> sendTasks;
     
     public Client(String hostname, int port, String filename){
     	this.hostname = hostname;
     	this.port = port;
     	this.filename = filename;
+    	sendTasks = new ArrayList<String>();
     }
     
     private void connectToServer() throws UnknownHostException, IOException{
@@ -45,9 +48,17 @@ public class Client implements Runnable{
     
     private void sendOneTask(List<String> tasks) throws IOException {
     	DataOutputStream dos = new DataOutputStream(socketClient.getOutputStream());
-    	String task;
-		for(String time : workLoad()){
-			task = UUID.randomUUID().toString() + " " + time;
+    	String task, id;
+    	int i = 0;
+		for(String time : tasks){
+			//id = UUID.randomUUID().toString();
+			id = "Thread" + i;
+			i++;
+			//System.out.println(id);
+			task =  id + " " + time;
+			sendTasks.add(id);
+			//if(sendTasks.add(id)) System.out.println(id);
+			//System.out.println(sendTasks.get(i));
 			dos.write(task.getBytes());
 			try { Thread.sleep(10); } catch (InterruptedException e) { }
 		}
@@ -75,6 +86,23 @@ public class Client implements Runnable{
 		
 		return tasks;
 	}
+    
+    private void waitForResults() throws IOException{
+    	String id;
+    	for(;;){
+    		DataInputStream dis = new DataInputStream(socketClient.getInputStream());
+    		byte[] messageByte = new byte[1024];
+			while(dis.read(messageByte) != -1){
+				id = new String(messageByte);
+				System.out.println(id);
+				Boolean b = sendTasks.remove(id.trim());
+				if(b) System.out.println(sendTasks.size());
+				if(sendTasks.isEmpty()) System.out.println("All tasks done");
+				messageByte = new byte[1024];
+				try { Thread.sleep(100); } catch (InterruptedException e) { }
+			}
+    	}
+    }
 
 
 	public void run() {
@@ -82,9 +110,32 @@ public class Client implements Runnable{
 			connectToServer();
 			//sendTask(workLoad());
 			sendOneTask(workLoad());
-			
+			waitForResults();
 		} catch (Exception e) {
 			System.out.println("Couldn't connect");
 		}	
+	}
+	
+	public static void main(String [] args){
+		
+		String hostname = "localhost";
+		int port = 9018;
+		String filename = "workload";
+		
+		if(args[0] != null && args[0].equals("-s")){
+			if(args[1] != null){
+				hostname = args[1].split(":")[0];
+				port = Integer.parseInt(args[1].split(":")[1]);
+			}
+		}
+		
+		if(args[2] != null && args[2].equals("-w")){
+			if(args[3] != null){
+				filename = args[3];
+			}
+		}
+		
+		Thread thread = new Thread(new Client(hostname, port, filename));
+		thread.start();
 	}
 }

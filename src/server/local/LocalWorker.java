@@ -20,30 +20,30 @@ public class LocalWorker implements Runnable{
 
 	public void startworker(int numThreads){
 		
-		
 		SleepTask st = null;
 		
 		for(;;){
 			st = TaskQueue.getTask();
 			if(st != null) pool.submit(st);
 			try {
-				Thread.sleep(100);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 	
 	public static void getTasksDone(){
+		try { Thread.sleep(1000); } catch (InterruptedException e) { }
 		for(;;){
             try {
-                System.out.println("Lookinf for Complete Tasks");
+                //System.out.println("Looking for Complete Tasks");
                 Future<SleepTask> result = pool.take();
-                System.out.println("Found. Trying to get the Task:"  );
+                //System.out.println("Found. Trying to get the Task:"  );
 
-                SleepTask l = result.get();
-                System.out.println("Task " + l.getId() + " Completed");
+                SleepTask st = result.get();
+                //System.out.println("Task " + st.getId() + " Completed - " + st.getResult());
+                CompleteTaskQueue.setTask(st);
 
             } catch (InterruptedException e) {
             	//e.printStackTrace();

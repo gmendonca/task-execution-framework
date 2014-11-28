@@ -5,14 +5,25 @@ import java.util.concurrent.Callable;
 public class SleepTask implements Callable<SleepTask>{
 	private String id;
 	private int time;
+	private String result;
 	
 	public SleepTask(String id, int time){
 		this.id = id;
 		this.time = time;
 	}
 	
+	public SleepTask(String id, int time, String result){
+		this.id = id;
+		this.time = time;
+		this.result = result;
+	}
+	
 	public String getId(){
 		return id;
+	}
+	
+	public String getResult(){
+		return (result == null) ? "I didn't sleep!" : result;
 	}
 	
 	public String executeTask(){
@@ -26,15 +37,15 @@ public class SleepTask implements Callable<SleepTask>{
 	}
 
 	public SleepTask call() throws Exception {
-		System.out.println("----- Task " + id + " started -----");
+		//System.out.println("----- Task " + id + " started -----");
 		String result = executeTask();
 		if(result == null){
-			System.out.println("----- Task " + id + " Interrupted -----");
+			//System.out.println("----- Task " + id + " Interrupted -----");
 			return null;
 		}
 		else {
-			System.out.println("----- Task " + id + " Completed -----");
-			return new SleepTask(id, time);
+			//System.out.println("----- Task " + id + " Completed -----");
+			return new SleepTask(id, time, result);
 		}
 	}
 
