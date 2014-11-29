@@ -1,5 +1,4 @@
 import client.Client;
-import server.local.LocalScheduler;
 
 public class LocalTaskExecutor {
 	
@@ -10,7 +9,7 @@ public class LocalTaskExecutor {
 		String filename = "workload";
 		int numThreads = 5;
 		
-		LocalScheduler scheduler = new LocalScheduler(port, numThreads);
+		Scheduler scheduler = new Scheduler(port, numThreads);
 		Client client = new Client(hostname, port, filename);
 		
 		Thread t1 = new Thread(scheduler);
