@@ -8,8 +8,9 @@ public class LocalTaskExecutor {
 		int port = 9018;
 		String filename = "workload";
 		int numThreads = 5;
+		Boolean remote = false;
 		
-		Scheduler scheduler = new Scheduler(port, numThreads);
+		Scheduler scheduler = new Scheduler(port, numThreads, remote);
 		Client client = new Client(hostname, port, filename);
 		
 		Thread t1 = new Thread(scheduler);
