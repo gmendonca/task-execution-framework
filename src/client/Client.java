@@ -110,7 +110,7 @@ public class Client implements Runnable{
 					String q = lane.poll();
 					Boolean b = sendTasks.remove(q);
 					if(b) System.out.println(sendTasks.size());
-					//if(sendTasks.isEmpty()) System.out.println("All tasks done");
+					if(sendTasks.isEmpty()) System.out.println("All tasks done");
 				}
 			}
     	}

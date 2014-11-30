@@ -1,10 +1,12 @@
 package server;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -14,10 +16,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.codec.binary.Base64;
 
+import com.amazonaws.services.sqs.model.Message;
+
 import server.local.CompleteTaskQueue;
 import server.local.LocalWorker;
 import server.local.TaskQueue;
 import server.remote.SimpleQueueService;
+import server.remote.TaskDoneQueue;
 
 public class Scheduler implements Runnable{
 	 private int port;
@@ -27,6 +32,7 @@ public class Scheduler implements Runnable{
 	 private int numThreads;
 	 private Socket client;
 	 private Boolean remote;
+	 private TaskDoneQueue done;
 	 
 	 public Scheduler(int port, int numThreads, Boolean remote){
 		 this.port = port;
@@ -76,10 +82,10 @@ public class Scheduler implements Runnable{
 
 				byte[] messageByte = new byte[1000*1024];
 				while(isr.read(messageByte) != -1){
-					System.out.println("message = " + new String(messageByte));
+					//System.out.println("message = " + new String(messageByte));
 					full = new String(messageByte).split(";");
 					lane.addAll(Arrays.asList(full));
-					System.out.println(lane.size());
+					//System.out.println(lane.size());
 					messageByte = new byte[1000*1024];
 					while(!lane.isEmpty()){
 						String q = lane.poll();
@@ -92,8 +98,7 @@ public class Scheduler implements Runnable{
 	 private void startRemoteServer() throws IOException {
 		 
 			socketServer = new ServerSocket(port);
-			queue = new TaskQueue();
-			complete = new CompleteTaskQueue();
+			done = new TaskDoneQueue();
 			
 			client = socketServer.accept();
 			
@@ -105,8 +110,60 @@ public class Scheduler implements Runnable{
 			ByteArrayOutputStream bo;
 			ObjectOutputStream so;
 			String queueUrl = sqs.createQueue("send-to-workers");
-			//String queueUrl = "https://sqs.us-west-2.amazonaws.com/398157563435/queue-task-execution-framework";
-			System.out.println(queueUrl);
+			
+			Thread tasksDone = new Thread(new Runnable(){
+				public void run() {
+					try {
+						sendRemoteCompletedTasksBack();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				
+			});
+			
+			tasksDone.start();
+			
+			Thread getTasksDone = new Thread(new Runnable(){
+				@SuppressWarnings("static-access")
+				public void run(){
+					Message message;
+					SimpleQueueService sqs = new SimpleQueueService();
+					String backQueueUrl = sqs.createQueue("send-to-scheduler");
+					SleepTask st = null;
+					byte task[];
+				    ByteArrayInputStream bi;
+				    ObjectInputStream si;
+				    String result = null;
+					for(;;){
+						message = sqs.getTask(backQueueUrl);
+						
+						if(message == null){
+							try{ Thread.sleep(100); } catch(Exception e) { }
+							continue;
+						}
+						task = Base64.decodeBase64(message.getBody());
+						sqs.deleteTask(backQueueUrl, message);
+					    bi = new ByteArrayInputStream(task);
+					    try {
+							si = new ObjectInputStream(bi);
+							st = (SleepTask) si.readObject();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
+						if(st != null){
+							System.out.println(st.getId());
+							result = st.executeTask();
+							System.out.println(result);
+							done.setTask(st);
+						}
+						
+					}
+				}
+			});
+			
+			getTasksDone.start();
 			
 			createWorkers(sqs);
 			
@@ -116,10 +173,10 @@ public class Scheduler implements Runnable{
 
 				byte[] messageByte = new byte[1000*1024];
 				while(isr.read(messageByte) != -1){
-					System.out.println("message = " + new String(messageByte));
+					//System.out.println("message = " + new String(messageByte));
 					full = new String(messageByte).split(";");
 					lane.addAll(Arrays.asList(full));
-					System.out.println(lane.size());
+					//System.out.println(lane.size());
 					messageByte = new byte[1000*1024];
 					while(!lane.isEmpty()){
 						String task = lane.poll();
@@ -129,7 +186,6 @@ public class Scheduler implements Runnable{
 							so = new ObjectOutputStream(bo);
 							so.writeObject(sts);
 							so.flush();
-							//taskConverted = bo.toString();
 							taskConverted = new String(Base64.encodeBase64(bo.toByteArray()));
 							sqs.sendTask(taskConverted, queueUrl);
 						}
@@ -172,7 +228,23 @@ public class Scheduler implements Runnable{
 		while(true){
 			st = complete.getTask();
 			if(st != null){
-				//System.out.println(st.getId());
+				System.out.println(st.getId());
+				System.out.println(st.getResult());
+				dos.write((st.getId()+";").getBytes());
+			}
+			try { Thread.sleep(100); } catch (Exception e) { }
+		}
+		
+	}
+	
+	@SuppressWarnings("static-access")
+	private void sendRemoteCompletedTasksBack() throws IOException{
+		try { Thread.sleep(1000); } catch (InterruptedException e) { }
+		DataOutputStream dos = new DataOutputStream(client.getOutputStream());
+		SleepTask st = null;
+		while(true){
+			st = done.getTask();
+			if(st != null){
 				dos.write((st.getId()+";").getBytes());
 			}
 			try { Thread.sleep(100); } catch (Exception e) { }
