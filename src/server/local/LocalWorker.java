@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import server.SleepTask;
+
 public class LocalWorker implements Runnable{
 	private int numThreads;
 	private static ExecutorService executor;

@@ -1,4 +1,6 @@
 import client.Client;
+import server.Scheduler;
+import server.remote.SimpleQueueService;
 
 public class LocalTaskExecutor {
 	
@@ -17,5 +19,10 @@ public class LocalTaskExecutor {
 		Thread t2 = new Thread(client);
 		t1.start();
 		t2.start();
+		
+		SimpleQueueService sqs = new SimpleQueueService();
+		for(String s : sqs.listQueues()){
+			System.out.println(s);
+		}
 	}
 }

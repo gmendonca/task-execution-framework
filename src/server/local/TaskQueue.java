@@ -4,6 +4,8 @@ package server.local;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import server.SleepTask;
+
 public class TaskQueue {
 	private static Queue<SleepTask> scheduler;
 	

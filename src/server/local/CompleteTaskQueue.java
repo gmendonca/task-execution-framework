@@ -3,6 +3,8 @@ package server.local;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import server.SleepTask;
+
 public class CompleteTaskQueue {
 private static Queue<SleepTask> tasksDone;
 	

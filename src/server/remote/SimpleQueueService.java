@@ -14,6 +14,7 @@ import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.DeleteQueueRequest;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 
 public class SimpleQueueService {
@@ -51,15 +52,14 @@ public class SimpleQueueService {
 	
 	public Message getTask(String queueUrl){
 		ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueUrl);
-		List<Message> messages = sqs.receiveMessage(receiveMessageRequest).getMessages();
+		ReceiveMessageResult rmr = sqs.receiveMessage(receiveMessageRequest);
+		List<Message> messages = rmr.getMessages();
+		if(messages.size() == 0) return null;
 		return messages.get(0);
 	}
 	
-	public void deleteTask(String queueUrl){
-		ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueUrl);
-		List<Message> messages = sqs.receiveMessage(receiveMessageRequest).getMessages();
-		String messageRecieptHandle = messages.get(0).getReceiptHandle();
-		sqs.deleteMessage(new DeleteMessageRequest(queueUrl, messageRecieptHandle));
+	public void deleteTask(String queueUrl, Message message){
+		sqs.deleteMessage(new DeleteMessageRequest(queueUrl, message.getReceiptHandle()));
 	}
 	
 	public void deteleQueue(String queueUrl){

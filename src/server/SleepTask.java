@@ -1,8 +1,10 @@
-package server.local;
+package server;
 
+import java.io.Serializable;
 import java.util.concurrent.Callable;
 
-public class SleepTask implements Callable<SleepTask>{
+@SuppressWarnings("serial")
+public class SleepTask implements Callable<SleepTask>, Serializable{
 	private String id;
 	private int time;
 	private String result;

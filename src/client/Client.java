@@ -91,7 +91,7 @@ public class Client implements Runnable{
 	}
     
     private void waitForResults() throws IOException{
-    	String id;
+    	//String id;
     	String [] full;
     	Queue<String> lane = new LinkedList<String>();
     	for(;;){
