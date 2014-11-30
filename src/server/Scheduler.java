@@ -33,7 +33,6 @@ public class Scheduler implements Runnable{
 	 private Socket client;
 	 private Boolean remote;
 	 private TaskDoneQueue done;
-	 private DynamoDB dynamoDB;
 	 
 	 public Scheduler(int port, int numThreads, Boolean remote){
 		 this.port = port;
