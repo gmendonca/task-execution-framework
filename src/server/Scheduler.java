@@ -21,6 +21,8 @@ import com.amazonaws.services.sqs.model.Message;
 import server.local.CompleteTaskQueue;
 import server.local.LocalWorker;
 import server.local.TaskQueue;
+import server.remote.ClusterDynamoDB;
+import server.remote.RequestWorker;
 import server.remote.SimpleQueueService;
 import server.remote.TaskDoneQueue;
 
@@ -111,6 +113,11 @@ public class Scheduler implements Runnable{
 			ObjectOutputStream so;
 			String queueUrl = sqs.createQueue("send-to-workers");
 			
+			ClusterDynamoDB cddb = new ClusterDynamoDB();
+			cddb.createTable("task-dynamodb");
+			
+			createWorkers(sqs);
+			
 			Thread tasksDone = new Thread(new Runnable(){
 				public void run() {
 					try {
@@ -165,8 +172,6 @@ public class Scheduler implements Runnable{
 			
 			getTasksDone.start();
 			
-			createWorkers(sqs);
-			
 			while(true){
 				
 				DataInputStream isr = new DataInputStream(client.getInputStream());
@@ -216,8 +221,8 @@ public class Scheduler implements Runnable{
 	}
 	
 	private void createWorkers(SimpleQueueService sqs){
-		
-		
+		RequestWorker rw = new RequestWorker("m3.medium","ami-075f0837","0.03","workers");
+		rw.submitRequests(4);
 	}
 	
 	@SuppressWarnings("static-access")

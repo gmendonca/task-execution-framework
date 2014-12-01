@@ -17,8 +17,8 @@ public class LocalTaskExecutor {
 		
 		Thread t1 = new Thread(scheduler);
 		Thread t2 = new Thread(client);
-		t1.start();
-		t2.start();
+//		t1.start();
+//		t2.start();
 		
 		SimpleQueueService sqs = new SimpleQueueService();
 		for(String s : sqs.listQueues()){

@@ -44,6 +44,8 @@ public class RemoteWorker implements Runnable{
 	    
 	    Thread remoteworker = new Thread(rt);
 	    remoteworker.start();
+	    
+	    ClusterDynamoDB cddb = new ClusterDynamoDB();
 		
 		for(;;){
 			message = sqs.getTask(queueUrl);
@@ -53,7 +55,6 @@ public class RemoteWorker implements Runnable{
 				continue;
 			}
 			task = Base64.decodeBase64(message.getBody());
-			sqs.deleteTask(queueUrl, message);
 		    bi = new ByteArrayInputStream(task);
 		    try {
 				si = new ObjectInputStream(bi);
@@ -63,8 +64,11 @@ public class RemoteWorker implements Runnable{
 			}
 			
 			if(st != null){
-				System.out.println(st.getId());
-				rt.sumitWork(st);
+				if(cddb.addItem("task-dynamodb",st.getId())){
+					sqs.deleteTask(queueUrl, message);
+					System.out.println(st.getId());
+					rt.sumitWork(st);
+				}
 			}
 			
 		}
