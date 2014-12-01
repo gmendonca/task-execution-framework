@@ -119,13 +119,10 @@ public class Client implements Runnable{
 
 	public void run() {
 		try {
-			connectToServer();
 			//sendTask(workLoad());
 			sendOneTask(workLoad());
-			
-			waitForResults();
 		} catch (Exception e) {
-			System.out.println("Couldn't connect");
+			System.out.println("Couldn't send messages");
 		}	
 	}
 	
@@ -148,7 +145,25 @@ public class Client implements Runnable{
 			}
 		}
 		
-		Thread thread = new Thread(new Client(hostname, port, filename));
+		final Client c = new Client(hostname, port, filename);
+		try {
+			c.connectToServer();
+		} catch (Exception e){
+			System.out.println("Couldn't connect");
+		}
+		
+		Thread thread = new Thread(c);
 		thread.start();
+		
+		Thread results = new Thread(new Runnable(){
+			public void run(){
+				try {
+					c.waitForResults();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		results.start();
 	}
 }

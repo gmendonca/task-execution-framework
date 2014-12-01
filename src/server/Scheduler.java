@@ -221,7 +221,7 @@ public class Scheduler implements Runnable{
 	}
 	
 	private void createWorkers(SimpleQueueService sqs){
-		RequestWorker rw = new RequestWorker("m3.medium","ami-075f0837","0.03","workers");
+		RequestWorker rw = new RequestWorker("m3.medium","ami-2b4c1b1b","0.03","workers");
 		rw.submitRequests(4);
 	}
 	
