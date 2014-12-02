@@ -35,11 +35,13 @@ public class Scheduler implements Runnable{
 	 private Socket client;
 	 private Boolean remote;
 	 private TaskDoneQueue done;
+	 private int numWorkers;
 	 
-	 public Scheduler(int port, int numThreads, Boolean remote){
+	 public Scheduler(int port, int numThreads, Boolean remote, int numWorkers){
 		 this.port = port;
 		 this.numThreads = numThreads;
 		 this.remote = remote;
+		 this.numWorkers = numWorkers;
 	 }
 	 
 	 private void startLocalServer() throws IOException {
@@ -224,7 +226,7 @@ public class Scheduler implements Runnable{
 		long startTime, stopTime;
 		startTime = System.currentTimeMillis();
 		RequestWorker rw = new RequestWorker("m3.medium","ami-db693eeb","0.03","workers");
-		rw.submitRequests(16);
+		rw.submitRequests(numWorkers);
 		do
         {
             try {
@@ -286,6 +288,7 @@ public class Scheduler implements Runnable{
 		int port = 9018;
 		int numThreads = 5;
 		Boolean remote = false;
+		int numWorkers = 4;
 		
 		if(args[0] != null && args[0].equals("-s")){
 			if(args[1] != null){
@@ -300,9 +303,12 @@ public class Scheduler implements Runnable{
 		}
 		else if(args[2] != null && args[2].equals("-rw")){
 			remote = true;
+			if(args[3] != null){
+				numWorkers = Integer.parseInt(args[3]);
+			}
 		}
 		
-		Thread thread = new Thread(new Scheduler(port, numThreads, remote));
+		Thread thread = new Thread(new Scheduler(port, numThreads, remote, numWorkers));
 		thread.start();
 		
 	}
