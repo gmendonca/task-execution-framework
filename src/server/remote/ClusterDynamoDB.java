@@ -45,7 +45,7 @@ public class ClusterDynamoDB {
 			CreateTableRequest createTableRequest = new CreateTableRequest().withTableName(tableName)
 	                .withKeySchema(new KeySchemaElement().withAttributeName("taskid").withKeyType(KeyType.HASH))
 	                .withAttributeDefinitions(new AttributeDefinition().withAttributeName("taskid").withAttributeType(ScalarAttributeType.S))
-	                .withProvisionedThroughput(new ProvisionedThroughput().withReadCapacityUnits(1L).withWriteCapacityUnits(1L));
+	                .withProvisionedThroughput(new ProvisionedThroughput().withReadCapacityUnits(20L).withWriteCapacityUnits(20L));
 	        dynamoDB.createTable(createTableRequest);
 	        Tables.waitForTableToBecomeActive(dynamoDB, tableName);
 		}

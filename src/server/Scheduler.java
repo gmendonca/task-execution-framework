@@ -223,8 +223,8 @@ public class Scheduler implements Runnable{
 	private void createWorkers(SimpleQueueService sqs){
 		long startTime, stopTime;
 		startTime = System.currentTimeMillis();
-		RequestWorker rw = new RequestWorker("m3.medium","ami-ff6c3bcf","0.03","workers");
-		rw.submitRequests(8);
+		RequestWorker rw = new RequestWorker("m3.medium","ami-db693eeb","0.03","workers");
+		rw.submitRequests(16);
 		do
         {
             try {
