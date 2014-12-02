@@ -221,8 +221,21 @@ public class Scheduler implements Runnable{
 	}
 	
 	private void createWorkers(SimpleQueueService sqs){
-		RequestWorker rw = new RequestWorker("m3.medium","ami-2b4c1b1b","0.03","workers");
+		long startTime, stopTime;
+		startTime = System.currentTimeMillis();
+		RequestWorker rw = new RequestWorker("m3.medium","ami-39623509","0.03","workers");
 		rw.submitRequests(4);
+		do
+        {
+            try {
+				Thread.sleep(60);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+        } while (rw.anyOpen());
+		stopTime = System.currentTimeMillis();
+		System.out.println("Request time = " + (stopTime - startTime));
 	}
 	
 	@SuppressWarnings("static-access")

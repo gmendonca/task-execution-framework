@@ -41,7 +41,7 @@ public class Client implements Runnable{
     	for(String task : tasks){
     		pw.println(task);
     		try {
-				Thread.sleep(1000);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -131,6 +131,7 @@ public class Client implements Runnable{
 		String hostname = "localhost";
 		int port = 9018;
 		String filename = "workload";
+		long startTime, stopTime;
 		
 		if(args[0] != null && args[0].equals("-s")){
 			if(args[1] != null){
@@ -152,6 +153,7 @@ public class Client implements Runnable{
 			System.out.println("Couldn't connect");
 		}
 		
+		startTime = System.currentTimeMillis();
 		Thread thread = new Thread(c);
 		thread.start();
 		
@@ -165,5 +167,7 @@ public class Client implements Runnable{
 			}
 		});
 		results.start();
+		stopTime = System.currentTimeMillis();
+		System.out.println("Total time = " + (stopTime - startTime));
 	}
 }

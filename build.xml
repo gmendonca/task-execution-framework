@@ -1,0 +1,17 @@
+<project>
+<jar destfile="build/RemoteWorker.jar">
+  <fileset includes="**/*.class" dir="bin/"/>
+  <zipgroupfileset includes="*.jar" dir="lib/"/>
+  <manifest>
+    <attribute name="Main-Class" value="server.remote.RemoteWorker"/>
+  </manifest>
+</jar>
+
+<jar destfile="build/Scheduler.jar">
+  <fileset includes="**/*.class" dir="bin/"/>
+  <zipgroupfileset includes="*.jar" dir="lib/"/>
+  <manifest>
+    <attribute name="Main-Class" value="server.Scheduler"/>
+  </manifest>
+</jar>
+</project>
