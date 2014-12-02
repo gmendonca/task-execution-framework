@@ -1,5 +1,6 @@
 package server.remote;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.amazonaws.AmazonClientException;
@@ -55,6 +56,7 @@ public class SimpleQueueService {
 		ReceiveMessageResult rmr = sqs.receiveMessage(receiveMessageRequest);
 		List<Message> messages = rmr.getMessages();
 		if(messages.size() == 0) return null;
+		Collections.shuffle(messages);
 		return messages.get(0);
 	}
 	

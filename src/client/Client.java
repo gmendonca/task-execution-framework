@@ -10,10 +10,10 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Client implements Runnable{
 	private String hostname;
@@ -22,6 +22,7 @@ public class Client implements Runnable{
     private String filename;
     private List<String> sendTasks;
     private static Boolean done;
+    private static Queue<String> lane;
     
     public Client(String hostname, int port, String filename){
     	this.hostname = hostname;
@@ -92,32 +93,32 @@ public class Client implements Runnable{
 	}
     
     private void waitForResults() throws IOException{
-    	//String id;
     	String [] full;
-    	Queue<String> lane = new LinkedList<String>();
+    	lane = new ConcurrentLinkedQueue<String>();
+    	
     	for(;;){
-    		DataInputStream dis = new DataInputStream(socketClient.getInputStream());
-    		byte[] messageByte = new byte[1000*1024];
-			while(dis.read(messageByte) != -1){
-				full = new String(messageByte).split(";");
-				//System.out.println(id);
-				//Boolean b = sendTasks.remove(id.trim());
-				//if(b) System.out.println(sendTasks.size());
-				//if(sendTasks.isEmpty()) System.out.println("All tasks done");
-				lane.addAll(Arrays.asList(full));
-				messageByte = new byte[1000*1024];
-				//try { Thread.sleep(100); } catch (InterruptedException e) { }
+    	    DataInputStream dis = new DataInputStream(socketClient.getInputStream());
+    	    byte[] messageByte = new byte[1000*1024];
+    		while(dis.read(messageByte) != -1){
+    		full = new String(messageByte).split(";");
+    		lane.addAll(Arrays.asList(full));
+    		messageByte = new byte[1000*1024];
+    		}
+    	}
+    }
+    	
+    private void retrieveResults() throws IOException{	
+    	for(;;){
 				while(!lane.isEmpty()){
 					String q = lane.poll();
 					Boolean b = sendTasks.remove(q);
 					if(b) System.out.println(sendTasks.size());
 					if(sendTasks.isEmpty()){
 						System.out.println("All tasks done");
-						done = false;
+						done = true;
 					}
 				}
 			}
-    	}
     }
 
 
@@ -173,6 +174,17 @@ public class Client implements Runnable{
 			}
 		});
 		results.start();
+		try { Thread.sleep(1000); } catch (InterruptedException e) { }
+		Thread retrieves = new Thread(new Runnable(){
+			public void run(){
+				try {
+					c.retrieveResults();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		retrieves.start();
 		while(!done){
 			try {
 				Thread.sleep(1000);

@@ -223,8 +223,8 @@ public class Scheduler implements Runnable{
 	private void createWorkers(SimpleQueueService sqs){
 		long startTime, stopTime;
 		startTime = System.currentTimeMillis();
-		RequestWorker rw = new RequestWorker("m3.medium","ami-39623509","0.03","workers");
-		rw.submitRequests(4);
+		RequestWorker rw = new RequestWorker("m3.medium","ami-ff6c3bcf","0.03","workers");
+		rw.submitRequests(8);
 		do
         {
             try {
@@ -250,7 +250,6 @@ public class Scheduler implements Runnable{
 				System.out.println(st.getResult());
 				dos.write((st.getId()+";").getBytes());
 			}
-			try { Thread.sleep(100); } catch (Exception e) { }
 		}
 		
 	}
@@ -265,7 +264,6 @@ public class Scheduler implements Runnable{
 			if(st != null){
 				dos.write((st.getId()+";").getBytes());
 			}
-			try { Thread.sleep(100); } catch (Exception e) { }
 		}
 		
 	}

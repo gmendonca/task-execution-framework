@@ -6,11 +6,11 @@ import java.io.UnsupportedEncodingException;
 public class WorkloadGenerator {
 	
 	public static void main(String[] args){
-		int count = 10000;
+		int count = 500;
 		
 		PrintWriter writer;
 		try {
-			writer = new PrintWriter("workload1", "UTF-8");
+			writer = new PrintWriter("workload2", "UTF-8");
 			for(int i = 0; i < count; i ++)
 				writer.println("sleep 0");
 			writer.close();
