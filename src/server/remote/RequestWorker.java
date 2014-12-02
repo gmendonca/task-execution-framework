@@ -147,12 +147,9 @@ public class RequestWorker {
             List<SpotInstanceRequest> describeResponses = describeResult.getSpotInstanceRequests();
 
             for (SpotInstanceRequest describeResponse : describeResponses) {
-                System.out.println(" " +describeResponse.getSpotInstanceRequestId() +
-                                   " is in the "+describeResponse.getState() + " state.");
                 if (describeResponse.getState().equals("open")) {
                     return true;
                 }
-
             }
         } catch (AmazonServiceException e) {
             System.out.println("Error when calling describeSpotInstances");

@@ -21,6 +21,7 @@ public class Client implements Runnable{
     private Socket socketClient;
     private String filename;
     private List<String> sendTasks;
+    private static Boolean done;
     
     public Client(String hostname, int port, String filename){
     	this.hostname = hostname;
@@ -110,7 +111,10 @@ public class Client implements Runnable{
 					String q = lane.poll();
 					Boolean b = sendTasks.remove(q);
 					if(b) System.out.println(sendTasks.size());
-					if(sendTasks.isEmpty()) System.out.println("All tasks done");
+					if(sendTasks.isEmpty()){
+						System.out.println("All tasks done");
+						done = false;
+					}
 				}
 			}
     	}
@@ -146,6 +150,8 @@ public class Client implements Runnable{
 			}
 		}
 		
+		done = false;
+		
 		final Client c = new Client(hostname, port, filename);
 		try {
 			c.connectToServer();
@@ -167,6 +173,13 @@ public class Client implements Runnable{
 			}
 		});
 		results.start();
+		while(!done){
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 		stopTime = System.currentTimeMillis();
 		System.out.println("Total time = " + (stopTime - startTime));
 	}
