@@ -39,12 +39,12 @@ public class LocalWorker implements Runnable{
 		try { Thread.sleep(1000); } catch (InterruptedException e) { }
 		for(;;){
             try {
-                //System.out.println("Looking for Complete Tasks");
+                System.out.println("Looking for Complete Tasks");
                 Future<SleepTask> result = pool.take();
-                //System.out.println("Found. Trying to get the Task:"  );
+                System.out.println("Found. Trying to get the Task:"  );
 
                 SleepTask st = result.get();
-                //System.out.println("Task " + st.getId() + " Completed - " + st.getResult());
+                System.out.println("Task " + st.getId() + " Completed - " + st.getResult());
                 CompleteTaskQueue.setTask(st);
 
             } catch (InterruptedException e) {

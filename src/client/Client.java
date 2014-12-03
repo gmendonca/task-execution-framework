@@ -23,6 +23,7 @@ public class Client implements Runnable{
     private List<String> sendTasks;
     private static Boolean done;
     private static Queue<String> lane;
+    private static int numTasks = 0;
     
     public Client(String hostname, int port, String filename){
     	this.hostname = hostname;
@@ -80,6 +81,7 @@ public class Client implements Runnable{
 
 	        while (line != null) {
 	        	tasks.add(line.split("\\s+")[1]);
+	        	numTasks++;
 	            line = br.readLine();
 	        }
 	        
@@ -112,8 +114,11 @@ public class Client implements Runnable{
 				while(!lane.isEmpty()){
 					String q = lane.poll();
 					Boolean b = sendTasks.remove(q);
-					if(b) System.out.println(sendTasks.size());
-					if(sendTasks.isEmpty()){
+					if(b){
+						//System.out.println(sendTasks.size());
+						System.out.println(numTasks--);
+					}
+					if(sendTasks.isEmpty() && numTasks == 0){
 						System.out.println("All tasks done");
 						done = true;
 					}
